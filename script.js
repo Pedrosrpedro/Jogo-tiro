@@ -7,78 +7,49 @@ const menuContainer = document.getElementById("menuContainer");
 const gameUiContainer = document.getElementById("gameUiContainer");
 const playButton = document.getElementById("playButton");
 const scoreElement = document.getElementById("score");
+const shootButton = document.getElementById("shootButton"); // Novo botão
 
 let score = 0;
 let gameScene;
 let menuScene;
 
-// Esconde a UI do jogo no início
 gameUiContainer.style.display = 'none';
 
-
-// --- CENA DO MENU ---
+// --- CENA DO MENU (sem alterações) ---
 const createMenuScene = function() {
+    // ... (código da cena de menu permanece o mesmo de antes) ...
     const scene = new BABYLON.Scene(engine);
-    scene.clearColor = new BABYLON.Color4(0, 0, 0, 1); // Fundo preto
-
-    // Câmera do menu que gira lentamente
+    scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
     const camera = new BABYLON.ArcRotateCamera("menuCamera", -Math.PI / 2, Math.PI / 2.5, 15, BABYLON.Vector3.Zero(), scene);
-    
-    // Animação da câmera
-    scene.registerBeforeRender(() => {
-        camera.alpha += 0.001 * scene.getAnimationRatio(); // Gira lentamente
-    });
-
-    // Iluminação
+    scene.registerBeforeRender(() => { camera.alpha += 0.001 * scene.getAnimationRatio(); });
     const light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = 0.8;
     const pointLight = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(0, 0, -5), scene);
     pointLight.intensity = 0.5;
-
-    // Criando o Texto 3D (requer o FontData)
     const font_url = "https://assets.babylonjs.com/fonts/Fira%20Code%20Regular.json";
     fetch(font_url)
         .then(response => response.json())
         .then(fontData => {
-            const textMesh = BABYLON.MeshBuilder.CreateText("title", "TIRO AO ALVO", fontData, {
-                size: 2,
-                resolution: 16,
-                depth: 0.5
-            }, scene);
-
-            // Centraliza o texto
+            const textMesh = BABYLON.MeshBuilder.CreateText("title", "TIRO AO ALVO", fontData, { size: 2, resolution: 16, depth: 0.5 }, scene);
             const center = textMesh.getAbsolutePosition();
             textMesh.position.x -= center.x;
-
-            // Material para o texto (aparência metálica vermelha)
             const textMaterial = new BABYLON.StandardMaterial("textMat", scene);
             textMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.1, 0.1);
             textMaterial.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
             textMesh.material = textMaterial;
         });
-
     return scene;
 };
 
-
-// --- CENA DO JOGO ---
+// --- CENA DO JOGO (com as modificações para mobile) ---
 const createGameScene = function() {
     const scene = new BABYLON.Scene(engine);
-    scene.clearColor = new BABYLON.Color3(0.2, 0.3, 0.5); // Cor de fundo do céu
-    
-    // Trava o ponteiro do mouse para uma experiência FPS
-    scene.onPointerDown = (evt) => {
-        if (evt.button === 0) { // Botão esquerdo do mouse
-            engine.enterPointerlock();
-            shoot(scene); // Chama a função de tiro
-        }
-    };
-    
-    // Câmera em primeira pessoa
-    const camera = new BABYLON.FreeCamera("gameCamera", new BABYLON.Vector3(0, 0, -10), scene);
+    scene.clearColor = new BABYLON.Color3(0.2, 0.3, 0.5);
+
+    // MUDANÇA 1: Usando a VirtualJoysticksCamera no lugar da FreeCamera
+    const camera = new BABYLON.VirtualJoysticksCamera("VJC", new BABYLON.Vector3(0, 0, -10), scene);
     camera.setTarget(BABYLON.Vector3.Zero());
-    camera.attachControl(canvas, true); // Permite o controle da câmera com o mouse
-    camera.speed = 0.3; // Velocidade de movimento da câmera (opcional)
+    camera.attachControl(canvas, true);
 
     // Iluminação
     const light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
@@ -88,28 +59,34 @@ const createGameScene = function() {
     const createTarget = function() {
         const target = BABYLON.MeshBuilder.CreateSphere("target", {diameter: 1.5, segments: 32}, scene);
         const material = new BABYLON.StandardMaterial("targetMaterial", scene);
-        material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Vermelho
+        material.diffuseColor = new BABYLON.Color3(1, 0, 0);
         target.material = material;
-        target.tag = "target"; // Tag para identificar o alvo
+        target.tag = "target";
         
-        // Gera posição aleatória
         target.position.x = (Math.random() - 0.5) * 20;
         target.position.y = (Math.random() - 0.5) * 12;
         target.position.z = Math.random() * 10;
     };
     
-    // Função de tiro
-    const shoot = function(scene) {
-        // Dispara um raio do centro da tela (onde a mira está)
+    // Função de tiro (a lógica interna é a mesma)
+    const shoot = function() {
         const pickResult = scene.pick(engine.getRenderWidth() / 2, engine.getRenderHeight() / 2);
 
         if (pickResult.hit && pickResult.pickedMesh.tag === "target") {
-            pickResult.pickedMesh.dispose(); // Remove o alvo
+            pickResult.pickedMesh.dispose();
             score++;
             scoreElement.innerText = `Pontuação: ${score}`;
-            createTarget(); // Cria um novo alvo
+            // Esta linha garante que os alvos nunca acabem!
+            createTarget();
         }
     };
+
+    // MUDANÇA 2: Acionar o tiro com o botão, não mais com o clique na tela
+    // Usamos 'touchstart' para resposta imediata em dispositivos de toque
+    shootButton.addEventListener('touchstart', function(e) {
+        e.preventDefault(); // Impede comportamentos indesejados (como zoom)
+        shoot();
+    });
 
     // Cria 3 alvos iniciais
     for (let i = 0; i < 3; i++) {
@@ -119,36 +96,26 @@ const createGameScene = function() {
     return scene;
 };
 
-
-// --- LÓGICA PRINCIPAL E TRANSIÇÃO ---
-
-// Inicia com a cena do menu
+// --- LÓGICA PRINCIPAL E TRANSIÇÃO (sem alterações) ---
 menuScene = createMenuScene();
 let currentScene = menuScene;
 
-// Botão de Jogar
 playButton.addEventListener("click", () => {
-    // Esconde a UI do menu e mostra a do jogo
     menuContainer.style.display = "none";
     gameUiContainer.style.display = "block";
     
-    // Cria a cena do jogo (se ainda não existir)
     if (!gameScene) {
         gameScene = createGameScene();
     }
-
-    // Muda a cena ativa
     currentScene = gameScene;
 });
 
-// Loop de renderização principal
 engine.runRenderLoop(() => {
     if (currentScene) {
         currentScene.render();
     }
 });
 
-// Redimensionamento da janela
 window.addEventListener("resize", () => {
     engine.resize();
 });
