@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiro ao Alvo 3D com Babylon.js</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Importando a biblioteca Babylon.js e o Loader para a fonte 3D -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+</head>
+<body>
+    <!-- O canvas onde tudo será renderizado -->
+    <canvas id="renderCanvas"></canvas>
+
+    <!-- Contêiner da UI do Menu (visível no início) -->
+    <div id="menuContainer">
+        <h1>Tiro ao Alvo 3D</h1>
+        <button id="playButton">Jogar</button>
+    </div>
+
+    <!-- Contêiner da UI do Jogo (escondido no início) -->
+    <div id="gameUiContainer">
+        <div id="crosshair">+</div>
+        <div id="score">Pontuação: 0</div>
+    </div>
+
+    <!-- Nosso script do jogo -->
+    <script src="script.js"></script>
+</body>
+</html>
