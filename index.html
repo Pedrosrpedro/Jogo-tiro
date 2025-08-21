@@ -2,30 +2,30 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiro ao Alvo 3D com Babylon.js</title>
+    <!-- ESSENCIAL para responsividade em dispositivos móveis -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tiro ao Alvo 3D - Mobile</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Importando a biblioteca Babylon.js e o Loader para a fonte 3D -->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 </head>
 <body>
-    <!-- O canvas onde tudo será renderizado -->
     <canvas id="renderCanvas"></canvas>
 
-    <!-- Contêiner da UI do Menu (visível no início) -->
+    <!-- Contêiner da UI do Menu -->
     <div id="menuContainer">
         <h1>Tiro ao Alvo 3D</h1>
         <button id="playButton">Jogar</button>
     </div>
 
-    <!-- Contêiner da UI do Jogo (escondido no início) -->
+    <!-- Contêiner da UI do Jogo (com o novo botão de atirar) -->
     <div id="gameUiContainer">
         <div id="crosshair">+</div>
         <div id="score">Pontuação: 0</div>
+        <!-- NOVO: Botão de atirar para mobile -->
+        <button id="shootButton">Atirar</button>
     </div>
 
-    <!-- Nosso script do jogo -->
     <script src="script.js"></script>
 </body>
 </html>
